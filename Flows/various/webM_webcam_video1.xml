@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="planet-daniel">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <property name="username">luRPEJgKFrvl</property>
+      <property name="socket-path">flu-znVCkC.socket</property>
+      <property name="password">JDUpZXSBvktP</property>
+      <property name="port">8800</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+     <component 
+             name="producer-audio" 
+             project="flumotion" 
+             type="pipeline-producer" 
+             version="0.9.0.1" 
+             worker="daniel-worker">
+      <property name="pipeline">jackaudiosrc</property>
+      <clock-master>true</clock-master>
+    </component>
+    
+    <component name="producer-video"
+               type="webcam-producer"
+               label="producer-video"
+               worker="daniel-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="format">YV12</property>
+      <property name="framerate">20/1</property>
+      <property name="height">720</property>
+      <property name="width">1280</property>
+      <property name="mime">video/x-raw-yuv</property>
+      <property name="element-factory">v4l2src</property>
+      <property name="device">/dev/video1</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="vorbis-encoder"
+               label="encoder-audio"
+               worker="daniel-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-audio:default</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="vp8-encoder"
+               label="encoder-video"
+               worker="daniel-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">59</property>
+      <property name="bitrate">128000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video"
+               type="webm-muxer"
+               label="muxer-audio-video"
+               worker="daniel-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">luRPEJgKFrvl</property>
+      <property name="mount-point">/webm-audio-video/</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">True</property>
+      <property name="port">8800</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-znVCkC.socket</property>
+      <property name="porter-password">JDUpZXSBvktP</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+   <component name="disk-audio-video" 
+		project="flumotion" 
+                type="disk-consumer" 
+               label="gravar"
+               worker="daniel-worker"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-audio-video:default</feed>
+               </eater>
+                <!-- properties -->
+               <property
+		name="directory">/home/daniel/</property>
+
+    </component>
+
+
+    <component 
+            name="preview"
+            type="preview-consumer"
+            worker="daniel-worker"
+            project="flumotion"
+            version="0.9.0.1">  
+     <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+
+    </component>
+  </flow>
+
+</planet>

@@ -1,0 +1,21 @@
+<worker name="localhost">
+  <!-- We also have room2-worker and streamer-worker. -->
+
+  <!-- Tell the worker to log in to a manager to get instructions: -->
+  <manager>
+    <host>localhost</host>
+
+    <!-- We have 2 managers running on this central computer. 
+         The one for room1 is on this port: -->
+    <port>8462</port> 
+  </manager>
+
+  <authentication type="plaintext">
+    <username>user</username>
+    <password>test</password>
+  </authentication> 
+
+  <feederports>8650-8670</feederports> 
+  <debug>*:5</debug>
+
+</worker>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <property name="username">MIdlSwlpoDir</property>
+      <property name="socket-path">flu-xYVfEM.socket</property>
+      <property name="password">rnNaYezpEVHf</property>
+      <property name="port">1935</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+    <component name="producer-audio-video"
+               type="firewire-producer"
+               label="producer-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="deinterlace-mode">auto</property>
+      <property name="is-square">True</property>
+      <property name="deinterlace-method">ffmpeg</property>
+      <property name="framerate">25/2</property>
+      <property name="height">0</property>
+      <property name="width">328</property>
+      <property name="decoder">ffdec_dvvideo</property>
+      <property name="guid">576537722488109957</property>
+      <clock-master>true</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="faac-encoder"
+               label="encoder-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="x264-encoder"
+               label="encoder-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="keyframe-maxdistance">40</property>
+      <property name="quality">6</property>
+      <property name="bitrate">312000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video"
+               type="gst-flv-muxer"
+               label="muxer-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">MIdlSwlpoDir</property>
+      <property name="mount-point">/teste.flv</property>
+      <property name="burst-on-connect">False</property>
+      <property name="port">8800</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-xYVfEM.socket</property>
+      <property name="porter-password">rnNaYezpEVHf</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+    <component 
+             name="pipeline-converter" 
+             project="flumotion" 
+             label="rtmp" 
+             type="pipeline-consumer" 
+             version="0.9.0.1" 
+             worker="localhost">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="pipeline">rtmpsink qos=true location=rtmp://ec2-107-20-87-71.compute-1.amazonaws.com/live/teste</property>
+    </component>
+     
+    <component 
+            name="preview"
+            type="preview-consumer"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.0.1">  
+     <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+
+    </component>
+ 
+  </flow>
+  
+</planet>

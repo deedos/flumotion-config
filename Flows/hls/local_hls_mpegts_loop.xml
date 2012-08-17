@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">kBuddBVFJNBr</property>
+      <property name="socket-path">flu-qsYMZa.socket</property>
+      <property name="password">VyeTscKXEhFw</property>
+      <property name="port">8800</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+
+    <component name="producer-audio-video"
+               type="loop-producer"
+               label="producer-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="width">532</property>
+      <property name="framerate">24/1</property>
+      <property name="location">/media/dados/vjvault/ed_hd.ogv</property>
+      <property name="height">300</property>
+      <clock-master>true</clock-master>
+    </component>
+
+    <component name="kus"
+               type="keyunits-scheduler"
+               label="kus"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="interval">10000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="lamemp3-encoder"
+               label="encoder-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">   
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">96000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="x264-encoder"
+               label="encoder-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">kus:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">10</property>
+      <property name="bitrate">256000</property>
+      <property name="quality">6</property>
+      <property name="byte-stream">True</property>
+      <property name="profile">iphone</property>
+      <clock-master>false</clock-master>
+    </component>
+       
+
+
+    <component name="muxer-audio-video"
+               type="mpegts-muxer"
+               label="muxer-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="hls"
+               type="http-hlsstreamer"
+               label="hls"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">kBuddBVFJNBr</property>
+      <property name="port">8800</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-qsYMZa.socket</property>
+      <property name="porter-password">VyeTscKXEhFw</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+    
+    
+
+    
+  </flow>
+  
+</planet>

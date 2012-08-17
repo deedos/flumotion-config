@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <manager name="planet-daniel">
+    <!-- no host means all interfaces <host></host -->
+    <port>8462</port>
+
+    <component name="manager-bouncer" type="htpasswdcrypt">
+      <property name="data">flumotion:dF4wh3SMa4q/2</property>
+    </component>
+  </manager>
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">8800</property>
+    </component>
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+    <component name="fgdp-audio-video1"
+               type="fgdp-producer"
+               label="fgdp-audio-video1"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">localhost</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">15000</property>
+      <property name="max-reconnection-delay">1</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="http-audio-video1"
+               type="http-streamer"
+               label="http-audio-video1"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/webm1/</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">True</property>
+      <property name="port">8800</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+     <flow name="default">
+
+    <component name="fgdp-audio-video"
+               type="fgdp-producer"
+               label="fgdp-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">localhost</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">15000</property>
+      <property name="max-reconnection-delay">1</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/ogg-audio-video/</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">True</property>
+      <property name="port">8800</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>   
+     
+  </flow>
+  
+</planet>
+

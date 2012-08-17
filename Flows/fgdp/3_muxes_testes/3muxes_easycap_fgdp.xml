@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">HiYIcgHFOYWh</property>
+      <property name="socket-path">flu-YajDOc.socket</property>
+      <property name="password">zVwjOrxtEixU</property>
+      <property name="port">8800</property>
+    </component>
+  </atmosphere>
+  
+  <flow name="default">
+    
+    <component
+             name="producer-video" 
+             project="flumotion" 
+             type="pipeline-producer" 
+             version="0.9.1.1" 
+             worker="localhost">
+      <property name="pipeline">v4l2src device=/dev/video1 ! video/x-raw-rgb,width=360,height=240 ! ffmpegcolorspace</property>
+      <clock-master>false</clock-master>
+    </component>    
+
+    <component name="jack1"
+               type="pipeline-producer"
+               label="jack1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc connect=0</property>
+      <clock-master>true</clock-master>
+    </component>
+
+        <component name="jack2"
+               type="pipeline-producer"
+               label="jack2"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc connect=0</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="jack3"
+               type="pipeline-producer"
+               label="jack3"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc connect=0</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="vorbis1"
+               type="vorbis-encoder"
+               label="vorbis1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack1</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+        <component name="vorbis2"
+               type="vorbis-encoder"
+               label="encoder-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack2</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+        <component name="vorbis3"
+               type="vorbis-encoder"
+               label="encoder-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack3</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    
+    <component name="encoder-video"
+               type="vp8-encoder"
+               label="encoder-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">10</property>
+      <property name="bitrate">000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video-1"
+               type="webm-muxer"
+               label="muxer1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis1</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+       <component name="muxer-audio-video-2"
+               type="webm-muxer"
+               label="muxer2"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis2</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+
+       <component name="muxer-audio-video-3"
+               type="webm-muxer"
+               label="muxer3"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis3</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+     <component name="fgdp-audio-video1"
+               type="fgdp-consumer"
+               label="fgdp1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video-1:default</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">200.132.1.12</property>
+      <property name="password">test</property>
+      <property name="port">15000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+       <component name="fgdp-audio-video2"
+               type="fgdp-consumer"
+               label="fgdp2"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video-2:default</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">200.132.1.12</property>
+      <property name="password">test</property>
+      <property name="port">15001</property>
+      <clock-master>false</clock-master>
+    </component>
+       <component name="fgdp-audio-video3"
+               type="fgdp-consumer"
+               label="fgdp3"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video-3:default</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">200.132.1.12</property>
+      <property name="password">test</property>
+      <property name="port">15002</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+  </flow>
+  
+</planet>

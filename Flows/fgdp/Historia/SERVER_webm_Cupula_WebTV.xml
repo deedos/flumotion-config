@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">80</property>
+    </component>
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+<!-- fgdp webm -->
+    <component name="fgdp-webm"
+               type="fgdp-producer"
+               label="fgdp-webm"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.252.68</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8088</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- fgdp flv -->
+
+<!-- <component name="fgdp-flv"
+               type="fgdp-producer"
+               label="fgdp-flv"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.252.68</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8089</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>-->
+
+
+<!-- Servir HTTP 1 WebM --> 
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-webm</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/cupuladospovos.webm</property>
+      <property name="hostname">177.71.252.68</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">WebTV Cupula dos Povos</property>   
+      <property name="port">80</property>
+<!--      <property name="bandwidth-limit">400000000</property>--> <!-- limite de tráfego, usado para limitarmos e redirecionarmos requisições para relay (propriedade comentada logo abaixo). Ver ticket referente no redmine -->
+      <!-- <property name="redirect-on-overflow">PONTO de MONTAGEM do RELAY </property> -->
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/home/ubuntu/flumotionlogs/cupuladospovos_webm.log</property> <!-- Arrumar caminho de escrita do log -->
+	</plug>
+      </plugs>
+    </component>
+
+<!-- Servir HTTP 1 FLV  - NAO precisamos servir em http o FLV pois como jogaremos pro wowza de qualquer forma, colocamos no player o stream de lá, para já balanacearmos carga e não congestionar o flumotion ttbm com as requisições de FLASH 
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-flv</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/cupuladospovos.flv</property>
+      <property name="hostname">IP_DO_SERVIDOR</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/cupuladospovos_flv.log</property>
+	</plug>
+      </plugs>
+    </component>
+
+-->
+
+<!-- __________________RTMP para WOWZA_________________________________________ -->
+ 
+<!--<component 
+             name="rtmp-wowza" 
+             project="flumotion" 
+             label="rtmp-wowza" 
+             type="pipeline-consumer" 
+             version="0.9.0.1" 
+             worker="ec2-worker">
+      <eater name="default">
+        <feed alias="default">fgdp-flv</feed>
+      </eater>
+      <property name="pipeline">rtmpsink qos=true location=rtmp://10.248.17.57:1935/live/cupuladospovos</property>
+    </component>-->
+
+    
+  </flow>
+  
+</planet>
+

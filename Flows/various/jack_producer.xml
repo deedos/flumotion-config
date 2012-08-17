@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+    <component name="http-server-audio-video"
+               type="http-server"
+               label="http-server-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <property name="porter-username">RUEulrJGVLqL</property>
+      <property name="mount-point">/ogg-audio-video/html5/</property>
+      <property name="hostname">daniel</property>
+      <property name="porter-password">euqEpZrzitUu</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-YmihtT.socket</property>
+      <property name="port">8800</property>
+      <plugs>
+        <plug type="component-html5">
+          <property name="width">320</property>
+          <property name="stream-url">http://daniel:8800/ogg-audio-video/</property>
+          <property name="height">240</property>
+          <property name="mime-type">video/ogg</property>
+          <property name="codecs">vorbis,theora</property>
+        </plug>
+      </plugs>
+    </component>
+    
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <property name="username">RUEulrJGVLqL</property>
+      <property name="socket-path">flu-YmihtT.socket</property>
+      <property name="password">euqEpZrzitUu</property>
+      <property name="port">8800</property>
+    </component>
+    
+
+    
+  </atmosphere>
+  
+  <flow name="default">
+     <component 
+             name="producer-audio" 
+             project="flumotion" 
+             type="pipeline-producer" 
+             version="0.9.0.1" 
+             worker="localhost">
+      <property name="pipeline">jackaudiosrc</property>
+    </component>
+    
+
+    <component name="producer-video"
+               type="videotest-producer"
+               label="producer-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <property name="pattern">0</property>
+      <property name="framerate">5/1</property>
+      <property name="width">320</property>
+      <property name="height">240</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="overlay-video"
+               type="overlay-converter"
+               label="overlay-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="show-text">True</property>
+      <property name="text">Flumotion</property>
+      <property name="cc-logo">True</property>
+      <property name="xiph-logo">True</property>
+      <property name="fluendo-logo">True</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="theora-encoder"
+               label="encoder-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">overlay-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">10</property>
+      <property name="speed">3</property>
+      <property name="bitrate">400000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="vorbis-encoder"
+               label="encoder-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-audio:default</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video"
+               type="ogg-muxer"
+               label="muxer-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">RUEulrJGVLqL</property>
+      <property name="mount-point">/ogg-audio-video/</property>
+      <property name="burst-on-connect">False</property>
+      <property name="port">8800</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-YmihtT.socket</property>
+      <property name="porter-password">euqEpZrzitUu</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+    
+  </flow>
+  
+</planet>

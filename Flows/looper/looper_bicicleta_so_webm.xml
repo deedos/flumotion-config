@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="planet-bicicleta">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <property name="username">QGPeujmNirVb</property>
+      <property name="socket-path">flu-eSdXem.socket</property>
+      <property name="password">iaBDkXBZKaPZ</property>
+      <property name="port">8000</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+    <component name="producer-audio-video"
+               type="loop-producer"
+               label="producer-audio-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <property name="width">854</property>
+      <property name="framerate">15/1</property>
+      <property name="location">/root/big_buck_bunny_480p_stereo.ogg</property>
+      <property name="height">480</property>
+      <clock-master>true</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="vorbis-encoder"
+               label="encoder-audio"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="vp8-encoder"
+               label="encoder-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="keyframe-maxdistance">48</property>
+      <property name="bitrate">216000</property>
+      <property name="threads">5</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    
+
+    
+    
+    <component name="muxer-audio-video"
+               type="webm-muxer"
+               label="muxer-audio-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+ 
+
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">QGPeujmNirVb</property>
+      <property name="mount-point">/webm-audio-video/</property>
+      <property name="hostname">200.20.113.53</property>
+      <property name="burst-on-connect">True</property>
+      <!--<property name="burst-time">20</property> -->  
+      <property name="port">8000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-eSdXem.socket</property>
+      <property name="porter-password">iaBDkXBZKaPZ</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+   
+
+    
+  </flow>
+  
+</planet>

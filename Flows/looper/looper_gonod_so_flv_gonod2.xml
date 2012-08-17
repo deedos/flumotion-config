@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="planet-gonod">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">EamRsKxaBktP</property>
+      <property name="socket-path">flu-DnVwIm.socket</property>
+      <property name="password">GQjGDmSTwLQl</property>
+      <property name="port">8901</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+    <component name="producer-audio-video"
+               type="loop-producer"
+               label="producer-audio-video"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="width">854</property>
+      <property name="framerate">24/1</property>
+      <property name="location">/home/deedos/big_buck_bunny_480p_stereo.ogg</property>
+      <property name="height">480</property>
+      <clock-master>true</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="faac-encoder"
+               label="encoder-audio"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">96000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="x264-encoder"
+               label="encoder-video"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="keyframe-maxdistance">10</property>
+      <property name="quality">6</property>
+      <property name="bitrate">128000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video"
+               type="gst-flv-muxer"
+               label="muxer-audio-video"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="gonod2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">EamRsKxaBktP</property>
+      <property name="mount-point">/teste.flv</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">False</property>
+      <property name="port">8801</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-DnVwIm.socket</property>
+      <property name="porter-password">GQjGDmSTwLQl</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+    
+  </flow>
+  
+</planet>

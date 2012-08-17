@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">80</property>
+    </component>
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+<!-- fgdp webm portugues -->
+    <component name="fgdp-webm-portugues"
+               type="fgdp-producer"
+               label="fgdp-webm-portugues"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.251.186</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8080</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- fgdp webm ingles -->
+    <component name="fgdp-webm-ingles"
+               type="fgdp-producer"
+               label="fgdp-webm-ingles"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.251.186</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8081</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+
+<!-- fgdp flv portugues -->
+
+ <component name="fgdp-flv-portugues"
+               type="fgdp-producer"
+               label="fgdp-flv-portugues"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.251.186</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8082</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- fgdp flv portugues -->
+
+ <component name="fgdp-flv-ingles"
+               type="fgdp-producer"
+               label="fgdp-flv-ingles"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">177.71.251.186</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8083</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- Servir HTTP 1 WebM Portugues --> 
+
+    <component name="http-av-webm-portugues"
+               type="http-streamer"
+               label="http-av-webm"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-webm-portugues</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/vdo-port.webm</property>
+      <property name="hostname">177.71.251.186</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Ao Vivo - Vida dos Objetos</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property> <!-- limite de tráfego, usado para limitarmos e redirecionarmos requisições para relay (propriedade comentada logo abaixo). Ver ticket referente no redmine -->
+      <!-- <property name="redirect-on-overflow">PONTO de MONTAGEM do RELAY </property> -->
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/vida-dos-objetos-webm-portugues.log</property> <!-- Arrumar caminho de escrita do log -->
+	</plug>
+      </plugs>
+    </component>
+
+<!-- Servir HTTP 1 WebM INGLES --> 
+
+    <component name="http-av-webm-ingles"
+               type="http-streamer"
+               label="http-av-webm-ingles"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-webm-ingles</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/vdo-ingles.webm</property>
+      <property name="hostname">177.71.251.186</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Ao Vivo - Vida dos Objetos</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property> <!-- limite de tráfego, usado para limitarmos e redirecionarmos requisições para relay (propriedade comentada logo abaixo). Ver ticket referente no redmine -->
+      <!-- <property name="redirect-on-overflow">PONTO de MONTAGEM do RELAY </property> -->
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/vida-dos-objetos-webm-ingles.log</property> <!-- Arrumar caminho de escrita do log -->
+	</plug>
+      </plugs>
+    </component>
+
+
+
+
+<!-- __________________Servir FLV via HTTP_________________________________________ -->
+ 
+<!-- Servir HTTP 1 FLV PORTUGUES --> 
+    <component name="http-av-flv-portugues"
+               type="http-streamer"
+               label="http-av-flv-portugues"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-flv-portugues</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/vdo-port.flv</property>
+      <property name="hostname">177.71.251.186</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Ao Vivo - Vida dos Objetos</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property> <!-- limite de tráfego, usado para limitarmos e redirecionarmos requisições para relay (propriedade comentada logo abaixo). Ver ticket referente no redmine -->
+      <!-- <property name="redirect-on-overflow">PONTO de MONTAGEM do RELAY </property> -->
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/vdo-flv-port.log</property> <!-- Arrumar caminho de escrita do log -->
+	</plug>
+      </plugs>
+    </component>
+
+<!-- Servir HTTP 1 FLV INGLES --> 
+    <component name="http-av-flv-ingles"
+               type="http-streamer"
+               label="http-av-flv-ingles"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-flv-ingles</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/vdo-ingles.flv</property>
+      <property name="hostname">177.71.251.186</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Ao Vivo - Vida dos Objetos</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property> <!-- limite de tráfego, usado para limitarmos e redirecionarmos requisições para relay (propriedade comentada logo abaixo). Ver ticket referente no redmine -->
+      <!-- <property name="redirect-on-overflow">PONTO de MONTAGEM do RELAY </property> -->
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/vdo-flv-ingles.log</property> <!-- Arrumar caminho de escrita do log -->
+	</plug>
+      </plugs>
+    </component>
+
+    
+  </flow>
+  
+</planet>
+

@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">8800</property>
+    </component>
+  </atmosphere>
+
+ 
+<flow name="default">
+
+<!--__________________________________________________PRODUCERS/ENTRADAS__________________________________________________-->
+
+<!-- VIDEO - REDIMENSIONAR De ACORDO com JANELA 
+
+    <component name="producer-video"
+               project="flumotion" 
+               type="pipeline-producer"
+               version="0.11.0.1" 
+               worker="localhost">
+      <property name="pipeline">v4l2src device=/dev/video1 ! video/x-raw-yuv,width=320,height=240 ! postproc_ffmpegdeint ! ffmpegcolorspace</property>
+    </component>
+
+--> 
+<!-- BLACKMAGIC -->
+
+
+    <component name="producer-video"
+               project="flumotion" 
+               type="pipeline-producer"
+
+               worker="localhost">
+      <property name="pipeline">decklinksrc mode=11 connection=1 !  video/x-raw-yuv, width=1920, height=1080 ! ffmpegcolorspace !  postproc_ffmpegdeint ! ffmpegcolorspace</property>
+    </component>
+
+
+
+<!-- JACKS --> 
+
+    <component name="jack1"
+               type="pipeline-producer"
+               label="jack1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc do-timestamp=true name=flumotion connect=0</property>
+      <clock-master>true</clock-master>
+    </component>
+
+<!-- ___________________________________________________ escalonar a resolução ___________________________________________-->
+
+    <component name="scaler-video"
+               type="pipeline-converter"
+               label="scaler-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="pipeline">videoscale ! video/x-raw-yuv, width=640, height=360</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- ___________________________________________________ ENCODERS ___________________________________________-->
+
+
+ 
+<!-- encoders AUDIO VORBIS -->
+ 
+    <component name="vorbis1"
+               type="vorbis-encoder"
+               label="vorbis-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack1</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+<!-- encoders AUDIO FAAC -->
+
+
+    <component
+               name="faac1"
+               type="faac-encoder"
+               label="faac1-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack1</feed>
+      </eater>
+      <property name="bitrate">48000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- ENCODER VIDEO VP8 -->
+
+    <component name="encoder-vp8"
+               type="vp8-encoder"
+               label="encoder-vp8"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">scaler-video:default</feed>
+      </eater>
+       <property name="keyframe-maxdistance">120</property>
+      <property name="threads">6</property>
+      <property name="bitrate">350000</property> 
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- ENCODER VIDEO VP8 ALTA -->
+
+    <component name="encoder-vp8-alta"
+               type="vp8-encoder"
+               label="encoder-vp8-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+       <property name="keyframe-maxdistance">120</property>
+      <property name="threads">6</property>
+      <property name="bitrate">2000000</property> 
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- ENCODER VIDEO ALTA x264
+
+    <component name="encoder-x264-alta"
+               type="x264-encoder"
+               label="encoder-x264-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">59</property>
+      <property name="bitrate">5000000</property>
+      <clock-master>false</clock-master>
+    </component>
+-->
+<!-- ENCODER VIDEO baixa x264 -->
+
+    <component name="encoder-x264-baixa"
+               type="x264-encoder"
+               label="encoder-x264-baixa"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">scaler-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">59</property>
+      <property name="quality">6</property>
+      <property name="bitrate">200000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- _________________________________________ MUXES/JUNTAR AUDIO e VIDEO _____________________________________ -->
+
+<!-- MUXER x264 ALTA 
+
+    <component name="muxer-flv-alta"
+               type="gst-flv-muxer"
+               label="muxer-flv-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-alta:default</feed>
+        <feed alias="default-bis">faac1:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component> 
+-->
+
+<!-- MUXER x264 BAIXA -->
+
+    <component name="muxer-flv-baixa"
+               type="gst-flv-muxer"
+               label="muxer-flv-baixa"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-baixa:default</feed>
+        <feed alias="default-bis">faac1:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component> 
+
+
+<!-- MUX WEBM STREAM  --> 
+    
+    <component name="muxer-webm"
+               type="webm-muxer"
+               label="muxer-webm"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis1</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- MUX WEBM ALTA  
+    
+    <component name="muxer-webm-alta"
+               type="webm-muxer"
+               label="muxer-webm-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis1</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+-->
+
+<!-- _________________________________________________CONSUMERS/SAIDAS ______________________________ -->
+
+<!-- __ PREVIEWS __ -->
+
+    <component 
+            name="preview-escalonado"
+            type="preview-consumer"
+            label="preview-original"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1">  
+     <eater name="default">
+        <feed alias="default">scaler-video:default</feed>
+     </eater>
+    </component>
+
+<!-- __ PREVIEWS __--> 
+
+    <component 
+            name="preview-baixa"
+            type="preview-consumer"
+            label="preview-baixa-vp8"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1">  
+     <eater name="default">
+        <feed alias="default">encoder-vp8:default</feed>
+     </eater>
+    </component>
+
+<!-- ____________________________GRAVAR _________________________-->
+
+
+<!-- GRAVAR ALTA x264 
+
+   <component name="gravar-alta" 
+		project="flumotion" 
+                type="disk-consumer" 
+               label="gravar-alta"
+               worker="localhost"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-flv-alta:default</feed>
+               </eater>
+               <property name="directory">/media/dados/ATEM</property>
+
+    </component>
+
+-->
+<!-- GRAVAR ALTA WEBM 
+
+   <component  name="gravar-alta-webm" 
+	       project="flumotion" 
+               type="disk-consumer" 
+               label="gravar-alta-webm"
+               worker="localhost"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-webm-alta:default</feed>
+               </eater>
+               <property name="directory">/media/dados/T2i</property>
+
+    </component>
+-->
+
+<!-- FGDP WEBM -->
+
+       <component name="fgdp-audio-video"
+               type="fgdp-consumer"
+               label="fgdp-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm:default</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">200.20.113.53</property>
+      <property name="password">test</property>
+      <property name="port">1935</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- HTTP Localhost  
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/black_local.webm</property>
+      <property name="hostname">localhost</property>
+      <property name="burst-on-connect">True</property>
+      <property name="port">8800</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component> 
+--> 
+   
+  </flow>
+  
+</planet>

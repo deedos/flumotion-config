@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <manager name="planet-daniel">
+    <!-- no host means all interfaces <host></host -->
+    <port>8462</port>
+
+    <component name="manager-bouncer" type="htpasswdcrypt">
+      <property name="data">flumotion:dF4wh3SMa4q/2</property>
+    </component>
+  </manager>
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">8800</property>
+    </component>
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+    <component name="fgdp-audio-video"
+               type="fgdp-producer"
+               label="fgdp-audio-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">200.20.113.53</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">1935</property>
+      <property name="max-reconnection-delay">1</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- Transcoding -->
+
+
+
+    <component name="producer-decoder"
+               type="av-generic-decoder"
+               label="producer-decoder"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+     <eater name="default">
+        <feed>fgdp-audio-video:default</feed>
+     </eater>
+      <property name="width">352</property>
+      <property name="keyunits-interval">15</property>
+      <property name="height">288</property>
+      <property name="samplerate">44100</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- FLV
+
+    <component name="x264"
+               type="x264-encoder"
+               label="encoder-x264"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-decoder:video</feed>
+      </eater>
+
+      <property name="bitrate">500000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+    <component name="faac"
+               type="faac-encoder"
+               label="encoder-faac"
+               worker="bicicleta-worker"
+               project="flumotion"	
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-decoder:audio</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="muxer-flv"
+               type="gst-flv-muxer"
+               label="muxer-flv"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">x264:default</feed>
+        <feed alias="default-bis">faac:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+ -->  
+
+<!--   WEBM -->
+
+    <component name="encoder-vp8"
+               type="vp8-encoder"
+               label="encoder-vp8"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-decoder:video</feed>
+      </eater>
+       <property name="keyframe-maxdistance">50</property>
+      <property name="threads">4</property>
+      <property name="bitrate">600000</property> 
+      <clock-master>false</clock-master>
+    </component>
+
+    <component name="vorbis1"
+               type="vorbis-encoder"
+               label="vorbis-portugues"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-decoder:audio</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+    <component name="muxer-webm"
+               type="webm-muxer"
+               label="muxer-webm"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis1</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+
+<!-- Servir HTTP   --> 
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/teste.flv</property>
+      <property name="hostname">200.20.113.53</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">8800</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+<!-- Servir HTTP transcoded  --> 
+
+    <component name="http-audio-video2"
+               type="http-streamer"
+               label="http-audio-video2"
+               worker="bicicleta-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/teste.webm</property>
+      <property name="hostname">200.20.113.53</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">20</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">8800</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+   
+     
+  </flow>
+  
+</planet>
+

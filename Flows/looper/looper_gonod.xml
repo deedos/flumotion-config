@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="planet-daniel">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">CJtMiAvgopNs</property>
+      <property name="socket-path">flu-LubanF.socket</property>
+      <property name="password">ieEKBgdSmHDr</property>
+      <property name="port">8800</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+    <component name="producer-audio-video"
+               type="loop-producer"
+               label="producer-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="width">854</property>
+      <property name="framerate">24/1</property>
+      <property name="location">/home/deedos/ed_hd.ogv</property>
+      <property name="height">480</property>
+      <clock-master>true</clock-master>
+    </component>
+    
+    <component name="encoder-audio"
+               type="faac-encoder"
+               label="encoder-audio"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-audio2"
+               type="vorbis-encoder"
+               label="encoder-audio2"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:audio</feed>
+      </eater>
+      <property name="bitrate">64000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video2"
+               type="vp8-encoder"
+               label="encoder-video2"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="keyframe-maxdistance">48</property>
+      <property name="bitrate">256000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="encoder-video"
+               type="x264-encoder"
+               label="encoder-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-audio-video:video</feed>
+      </eater>
+      <property name="keyframe-maxdistance">48</property>
+      <property name="quality">6</property>
+      <property name="bitrate">256000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video"
+               type="gst-flv-muxer"
+               label="muxer-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio:default</feed>
+        <feed alias="default-bis">encoder-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="muxer-audio-video2"
+               type="webm-muxer"
+               label="muxer-audio-video2"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">encoder-audio2:default</feed>
+        <feed alias="default-bis">encoder-video2:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">CJtMiAvgopNs</property>
+      <property name="mount-point">/flv-audio-video/</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">False</property>
+      <property name="port">8801</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-LubanF.socket</property>
+      <property name="porter-password">ieEKBgdSmHDr</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+    
+    <component name="http-audio-video2"
+               type="http-streamer"
+               label="http-audio-video2"
+               worker="gonod-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video2:default</feed>
+      </eater>
+      <property name="porter-username">CJtMiAvgopNs</property>
+      <property name="mount-point">/webm-audio-video/</property>
+      <property name="hostname">gonod.softwarelivre.org</property>
+      <property name="burst-on-connect">False</property>
+      <property name="port">8800</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-LubanF.socket</property>
+      <property name="porter-password">ieEKBgdSmHDr</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+    
+  </flow>
+  
+</planet>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+  </atmosphere>
+
+ 
+<flow name="default">
+
+
+<!-- VIDEO - REDIMENSIONAR De ACORDO com JANELA - elemento postproc_ffmpegdeint é de desintrelaçamento.  -->
+
+    <component name="producer-video"
+               project="flumotion" 
+               type="pipeline-producer"
+               version="0.11.0.1" 
+               worker="localhost">
+      <property name="pipeline">v4l2src device=/dev/video1 ! video/x-raw-rgb,width=640,height=360 ! ffmpegcolorspace ! postproc_ffmpegdeint ! ffmpegcolorspace</property>
+    </component>
+
+
+<!-- ___________ENTRADAS de AUDIO - JACK___________________ --> 
+
+    <component name="jack"
+               type="pipeline-producer"
+               label="jack1"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc do-timestamp=true name=flumotion</property>
+      <clock-master>true</clock-master>
+    </component>
+
+
+
+<!-- ___________________________________________________ ENCODERS ______________________________ -->
+ 
+<!-- encoders AUDIO VORBIS -->
+ 
+    <component name="vorbis"
+               type="vorbis-encoder"
+               label="vorbis"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack</feed>
+      </eater>
+      <property name="bitrate">16000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+ 
+
+<!-- ENCODER VIDEO VP8 -->
+
+    <component name="encoder-vp8"
+               type="vp8-encoder"
+               label="encoder-vp8"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+       <property name="keyframe-maxdistance">240</property> <!-- aumentando pra 240 aqui melhorou um problema de flicks que as vezes rola com o vp8 -->
+      <property name="threads">5</property>
+      <property name="bitrate">180000</property> <!-- SE A CONEXAO ESTIVER BOA AUMENTAR PARA 250 ou 300 -->
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+<!-- _________________________________________ MUXES/JUNTAR AUDIO e VIDEO _____________________________________ -->
+
+
+<!-- MUXES WEBM -->
+    
+    <component name="muxer-webm"
+               type="webm-muxer"
+               label="muxer-webm"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- _________________________________________________CONSUMERS/SAIDAS ______________________________ -->
+
+<!-- __ PREVIEWS __ -->
+
+    <component 
+            name="preview"
+            type="preview-consumer"
+            label="preview-original"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1">  
+     <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+     </eater>
+    </component>
+
+<!-- FGDPS dos ENCODINGS -->
+
+  <!-- FGDP VP8 -->
+
+       <component name="fgdp-video"
+               type="fgdp-consumer"
+               label="fgdp-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">177.71.254.114</property>
+      <property name="password">test</property>
+      <property name="port">8088</property>
+      <clock-master>false</clock-master>
+    </component>
+
+    
+  </flow>
+  
+</planet>

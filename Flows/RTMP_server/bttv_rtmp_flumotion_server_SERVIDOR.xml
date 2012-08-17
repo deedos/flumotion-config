@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <manager name="planet-daniel">
+    <!-- no host means all interfaces <host></host -->
+    <port>8080</port>
+
+    <component name="manager-bouncer" type="htpasswdcrypt">
+      <property name="data">flumotion:dF4wh3SMa4q/2</property>
+    </component>
+  </manager>
+  <atmosphere>
+
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+type="flash-media-server-producer"
+
+
+<!-- _______________________________________FALTAM LOGS e Debug _______________________ -->
+
+<!-- Servir HTTP 1    
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/fcd_mam_portugues.webm</property>
+      <property name="hostname">107.20.232.229</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log/log_acesso_arte.log</property>
+	</plug>
+      </plugs>
+    </component>
+--> 
+
+
+    <component name="RTMP-producer"
+               type="flash-media-server-producer"
+               label="RTMP producer"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+
+      <!-- <property name="porter-username">xSEhEfOlhRbH</property> -->
+
+      <property name="mount-point">/live/teste</property> 
+      <property name="port">1935</property> 
+      <clock-master>false</clock-master>
+
+    </component>
+
+  </flow>
+  
+</planet>
+

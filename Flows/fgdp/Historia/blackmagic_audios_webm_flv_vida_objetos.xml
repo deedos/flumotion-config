@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+  </atmosphere>
+
+ 
+<flow name="default">
+
+
+<!-- VIDEO - REDIMENSIONAR De ACORDO com JANELA - eleento postproc_ffmpegdeint é de desintrelaçamento.  
+
+-->
+
+  <!--  <component name="producer-video"
+               type="blackmagic-producer"
+               label="blackmagic"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="deinterlace-mode">auto</property>
+      <property name="deinterlace-method">ffmpeg</property>
+      <property name="width">1920</property>
+      <property name="height">1080</property>
+    
+      <property name="video-format">11</property>
+      <clock-master>false</clock-master>
+    </component> -->
+
+    <component name="producer-video"
+               project="flumotion" 
+               type="pipeline-producer"
+               version="0.11.0.1" 
+               worker="localhost">
+      <property name="pipeline">mmtblackmagicsrc video-input=1 async-handling=true video-format=11 ! videoscale ! video/x-raw-yuv,width=640,height=360 ! ffmpegcolorspace ! postproc_ffmpegdeint ! ffmpegcolorspace</property>
+    </component>
+
+<!-- ___________ENTRADAS de AUDIO - JACK___________________ --> 
+
+    <component name="jack-portugues"
+               type="pipeline-producer"
+               label="jack-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc  name=portugues</property>
+      <clock-master>true</clock-master>
+    </component>
+
+    <component name="jack-ingles"
+               type="pipeline-producer"
+               label="jack-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="pipeline">jackaudiosrc  name=ingles</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+<!-- ___________________________________________________ ENCODERS ______________________________ -->
+ 
+<!-- encoders AUDIO VORBIS -->
+ 
+    <component name="vorbis-portugues"
+               type="vorbis-encoder"
+               label="vorbis-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack-portugues</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+    <component name="vorbis-ingles"
+               type="vorbis-encoder"
+               label="vorbis-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack-ingles</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+ 
+<!-- encoders AUDIO FAAC -->
+
+<component
+               name="faac-portugues"
+               type="faac-encoder"
+               label="faac"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack-portugues</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+<component
+               name="faac-ingles"
+               type="faac-encoder"
+               label="faac-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">jack-ingles</feed>
+      </eater>
+      <property name="bitrate">32000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- ENCODER VIDEO VP8 -->
+
+    <component name="encoder-vp8"
+               type="vp8-encoder"
+               label="encoder-vp8"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+       <property name="keyframe-maxdistance">240</property> <!-- aumentando pra 240 aqui melhorou um problema de flicks que as vezes rola com o vp8 -->
+      <property name="threads">5</property>
+      <property name="bitrate">350000</property> 
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- ENCODER VIDEO x264 -->
+
+    <component name="encoder-x264-baixa"
+               type="x264-encoder"
+               label="encoder-x264-baixa"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">59</property>
+      <property name="quality">6</property>
+      <property name="bitrate">300000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="encoder-x264-alta"
+               type="x264-encoder"
+               label="encoder-x264-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">59</property>
+      <property name="quality">6</property>
+      <property name="bitrate">2000000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- _________________________________________ MUXES/JUNTAR AUDIO e VIDEO _____________________________________ -->
+
+<!-- MUXER x264 ALTA -->
+
+    <component name="muxer-flv-alta-portugues"
+               type="gst-flv-muxer"
+               label="muxer-flv-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-alta:default</feed>
+        <feed alias="default-bis">faac-portugues:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component> 
+
+<!-- MUXES x264 baixas -->
+
+    <component name="muxer-flv-baixa-portugues"
+               type="gst-flv-muxer"
+               label="muxer-flv-baixa-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-baixa:default</feed>
+        <feed alias="default-bis">faac-portugues:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component> 
+
+    <component name="muxer-flv-baixa-ingles"
+               type="gst-flv-muxer"
+               label="muxer-flv-baixa-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-baixa:default</feed>
+        <feed alias="default-bis">faac-ingles:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- MUXES WEBM -->
+    
+    <component name="muxer-webm-portugues"
+               type="webm-muxer"
+               label="muxer-webm-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis-portugues</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+    <component name="muxer-webm-ingles"
+               type="webm-muxer"
+               label="muxer-webm-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis-ingles</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- _________________________________________________CONSUMERS/SAIDAS ______________________________ -->
+
+<!-- __ PREVIEWS __ -->
+
+    <component 
+            name="preview"
+            type="preview-consumer"
+            label="preview-original"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1">  
+     <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+     </eater>
+    </component>
+
+<!-- acho melhor não usarmos o preview do video encodeado pois ele come muita CPU 
+    <component 
+            name="preview-baixa"
+            type="preview-consumer"
+            label="preview-baixa-vp8"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1">  
+     <eater name="default">
+        <feed alias="default">encoder-vp8:default</feed>
+     </eater>
+    </component>
+-->
+
+<!-- ________________________GRAVAÇAO______________________-->
+
+<!--  ALTA x264 portugues-->
+
+   <component name="vida-dos-objetos-portugues" 
+		project="flumotion" 
+                type="disk-consumer" 
+               label="gravar-vida-dos-objetos-portugues"
+               worker="localhost"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-flv-alta-portugues:default</feed>
+               </eater>
+               <property name="directory">/dados/vidadosobjetos</property> <!-- mudar o caminho aqui pois no novo boot a partição dados não esta no fstab (ou colocar no fstab ou inserir o nome que o ubuntu monta a partição -->)
+
+<!--  baixa x264 ingles-->
+
+    </component>
+   <component name="vida-dos-objetos-ingles" 
+		project="flumotion" 
+                type="disk-consumer" 
+               label="gravar-alta"
+               worker="localhost"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-flv-baixa-ingles:default</feed>
+               </eater>
+               <property name="directory">/dados/vidadosobjetos</property> <!-- mudar o caminho aqui pois no novo boot a partição dados não esta no fstab (ou colocar no fstab ou inserir o nome que o ubuntu monta a partição -->)
+
+    </component>
+
+
+
+<!-- FGDPS dos ENCODINGS -->
+
+  <!-- FGDP WEBM PORTUGUES -->
+
+       <component name="fgdp-webm-portugues"
+               type="fgdp-consumer"
+               label="fgdp-webm-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm-portugues</feed>
+      </eater>
+      <property name="host">177.71.251.186</property>
+      <property name="username">user</property>
+      <property name="password">test</property>
+      <property name="port">8080</property>
+      <clock-master>false</clock-master>
+    </component>
+
+  <!-- FGDP WEBM INGLES -->
+
+       <component name="fgdp-webm-ingles"
+               type="fgdp-consumer"
+               label="fgdp-webm-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-webm-ingles</feed>
+      </eater>
+      <property name="host">177.71.251.186</property>
+      <property name="username">user</property>
+      <property name="password">test</property>
+      <property name="port">8081</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+
+
+
+<!-- _____________FGDP FLV_______________ -->
+
+  <!-- FGDP FLV PORTUGUES -->
+
+       <component name="fgdp-video-flv-portugues"
+               type="fgdp-consumer"
+               label="fgdp-video-flv-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-flv-baixa-portugues</feed>
+      </eater>
+      <property name="host">177.71.251.186</property>
+      <property name="username">user</property>
+      <property name="password">test</property>
+      <property name="port">8082</property> <!-- cada saída FGDP por uma porta diferente!! -->
+      <clock-master>false</clock-master>
+    </component>
+
+  <!-- FGDP FLV INGLES -->
+
+      <component name="fgdp-video-flv-ingles"
+               type="fgdp-consumer"
+               label="fgdp-video-flv-ingles"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-flv-baixa-ingles</feed>
+      </eater>
+      <property name="host">177.71.251.186</property>
+      <property name="username">user</property>
+      <property name="password">test</property>
+      <property name="port">8083</property> <!-- cada saída FGDP por uma porta diferente!! -->
+      <clock-master>false</clock-master>
+    </component>
+    
+  </flow>
+  
+</planet>

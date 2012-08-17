@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <manager name="planet-daniel">
+    <port>8080</port>
+    <component name="manager-bouncer" type="htpasswdcrypt">
+      <property name="data">flumotion:dF4wh3SMa4q/2</property>
+    </component>
+  </manager>
+
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">80</property>
+    </component>
+  </atmosphere>
+
+
+  <flow name="default">
+
+<!-- fgdp mux -->
+    <component name="fgdp-audio-video"
+               type="fgdp-producer"
+               label="fgdp-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">5080</property>
+      <property name="max-reconnection-delay">1</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- ____________________________GRAVAR WEBM NA NUVEM_______________________________ -->
+
+   <component name="penna-aovivo-webm" 
+		project="flumotion" 
+                type="disk-consumer" 
+               label="gravar-webm"
+               worker="ec2-worker">
+               <eater name="default">
+               <feed alias="default">fgdp-audio-video:default</feed>
+               </eater>
+               <property name="directory">/root</property>
+    </component>
+
+
+<!-- Servir HTTP     --> 
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/penna.webm</property>
+      <property name="hostname">177.71.183.201</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">10</property>       
+      <property name="port">80</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+	<property name="logfile">/root/log_acesso_penna.log</property>
+	</plug>
+      </plugs>
+
+    </component>
+
+  </flow>
+  
+</planet>
+

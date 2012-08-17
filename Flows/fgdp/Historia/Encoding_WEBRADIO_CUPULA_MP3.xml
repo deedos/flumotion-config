@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+  
+  <atmosphere>
+  </atmosphere>
+
+
+<!--============================ ENTRADA VIA JACK ======================================  -->
+  
+  <flow name="default">
+    <component name="producer-audio"
+               type="pipeline-producer"
+               label="producer-audio"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <property name="pipeline">jackaudiosrc</property>
+      <clock-master>true</clock-master>
+    </component>
+
+
+<!--============================ ENCODERS       ======================================  -->
+    
+    <component name="encoder-ogg"
+               type="vorbis-encoder"
+               label="encoder-ogg"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">producer-audio:default</feed>
+      </eater>
+      <property name="bitrate">128000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component  name="encoder-mp3" 
+		type="lamemp3-encoder" 
+		label="encoder-mp3"
+		worker="localhost" 
+		project="flumotion" 
+		version="0.11.0.1">
+	<eater name="default">
+	   <feed alias="default">producer-audio:default</feed>
+	</eater>
+	<property name="bitrate">128000</property>
+	<clock-master>false</clock-master></component>
+
+
+
+<!--============================ MUXES OGG e AAC ======================================  -->
+
+
+    
+    <component name="muxer-ogg"
+               type="ogg-muxer"
+               label="muxer-ogg"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-ogg:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+
+    <component name="muxer-mp3"
+               type="lamemp3-muxer"
+               label="muxer-aac"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-mp3:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+<!--============================ GRAVACAO HORA EM HORA ======================================  -->
+    
+    <component name="radio-cupula"
+               type="disk-consumer"
+               label="gravar-hora-em-hora"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">muxer-ogg:default</feed>
+      </eater>
+      <property name="directory">/var/www/radiocupula</property>
+      <property name="rotate-type">time</property>
+      <property name="start-recording">True</property>
+      <property name="time">3600</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+
+<!--============================ ENVIO SERVIDORES ======================================  -->
+ 
+ <!--=========== ICECAST2 ===========   
+
+    <component name="shout2-audio-video"
+               type="shout2-consumer"
+               label="shout2-audio-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">muxer-ogg:default</feed>
+      </eater>
+      <property name="short-name">source</property>
+      <property name="description"></property>
+      <property name="url"></property>
+      <property name="mount-point">/radioin.ogg</property>
+      <property name="ip">pontaodaeco.org</property>
+      <property name="password">l1nh4d3c0m4nd01</property>
+      <property name="port">8000</property>
+      <clock-master>false</clock-master>
+    </component>
+
+-->
+
+ <!--=========== FGDP OGG ===========  --> 
+
+
+	<component 
+		name="fgdp-ogg" 
+		type="fgdp-consumer" 
+		label="fgdp-ogg" 
+		worker="localhost" 
+		project="flumotion" 
+		version="0.9.1.1">
+	<eater name="default">
+		<feed alias="default">muxer-ogg:default</feed>
+	</eater>
+	<property name="username">user</property>
+	<property name="password">test</property>
+	<property name="host">IP_DO_SERVER_AMAZON</property>
+	<property name="port">PORTA</property>
+	<clock-master>false</clock-master>
+	</component>
+
+ <!--=========== FGDP MP3 ===========  --> 
+
+
+	<component 
+		name="fgdp-mp3" 
+		type="fgdp-consumer" 
+		label="fgdp-mp3" 
+		worker="localhost" 
+		project="flumotion" 
+		version="0.9.1.1">
+	<eater name="default">
+		<feed alias="default">muxer-mp3:default</feed>
+	</eater>
+	<property name="username">user</property>
+	<property name="password">test</property>
+	<property name="host">IP_DO_SERVER_AMAZON</property>
+	<property name="port">PORTA</property>
+	<clock-master>false</clock-master>
+	</component>
+
+    
+  </flow>
+  
+</planet>

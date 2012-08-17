@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="planet-ec2">
+  
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">80</property>
+    </component>
+    
+  </atmosphere>
+  
+  <flow name="default">
+    <component name="fgdp-mp3"
+               type="fgdp-producer"
+               label="fgdp-mp3"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="max-reconnection-delay">2</property>
+      <property name="host">ec2</property>
+      <property name="mode">pull</property>
+      <property name="password">test</property>
+      <property name="port">8001</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    <component name="fgdp-ogg"
+               type="fgdp-producer"
+               label="fgdp-ogg"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="max-reconnection-delay">2</property>
+      <property name="host">ec2</property>
+      <property name="mode">pull</property>
+      <property name="password">test</property>
+      <property name="port">8000</property>
+      <clock-master>false</clock-master>
+    </component>
+    
+    
+    <component name="http-mp3"
+               type="http-streamer"
+               label="http-mp3"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-mp3:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="description">Radio Cupula dos Povos</property>
+      <property name="mount-point">/radiocupula.mp3</property>
+      <property name="hostname">177.71.253.190</property>
+      <property name="burst-on-connect">True</property>
+	<property name="burst-time">1</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="timeout">5</property>
+      <property name="type">slave</property>
+      <property name="port">80</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+          <property name="logfile">/home/ubuntu/log_acesso_mp3_radiocupula.log</property>
+        </plug>
+      </plugs>
+    </component>
+    
+    <component name="http-ogg"
+               type="http-streamer"
+               label="http-ogg"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">fgdp-ogg:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="description">Radio Cupula dos Povos</property>
+      <property name="mount-point">/radiocupula.ogg</property>
+      <property name="hostname">177.71.253.190</property>
+      <property name="burst-on-connect">True</property>
+	<property name="burst-time">1</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="timeout">5</property>
+      <property name="type">slave</property>
+      <property name="port">80</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+        <plug type="requestlogger-file">
+          <property name="logfile">/home/ubuntu/log_acesso_ogg_radiocupula.log</property>
+        </plug>
+      </plugs>
+    </component>
+    
+  </flow>
+  
+</planet>

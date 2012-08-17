@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   
+<planet>
+
+  <manager name="planet-daniel">
+    <!-- no host means all interfaces <host></host -->
+    <port>8080</port>
+
+    <component name="manager-bouncer" type="htpasswdcrypt">
+      <property name="data">flumotion:dF4wh3SMa4q/2</property>
+    </component>
+  </manager>
+  <atmosphere>
+    <component name="porter-http"
+               type="porter"
+               label="porter-http"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">xSEhEfOlhRbH</property>
+      <property name="socket-path">flu-enqgOe.socket</property>
+      <property name="password">plXuQysiCSko</property>
+      <property name="port">80</property>
+    </component>
+    
+  </atmosphere>
+
+
+  <flow name="default">
+
+<!-- fgdp video -->
+    <component name="fgdp-video"
+               type="fgdp-producer"
+               label="fgdp-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">ec2</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8088</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- fgdp audio -->
+    <component name="fgdp-audio"
+               type="fgdp-producer"
+               label="fgdp-audio"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">ec2</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8085</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>true</clock-master>
+    </component>
+
+
+<!-- fgdp audio 2 -->
+
+    <component name="fgdp-audio2"
+               type="fgdp-producer"
+               label="fgdp-audio2"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <property name="username">user</property>
+      <property name="host">ec2</property>
+      <property name="password">test</property>
+      <property name="mode">pull</property>
+      <property name="port">8086</property>
+      <property name="max-reconnection-delay">2</property>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- muxer 1 -->
+
+ 
+    <component name="muxer-audio-video"
+               type="webm-muxer"
+               label="muxer-webm-portugues"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio:default</feed>
+        <feed alias="default-bis">fgdp-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+<!-- muxer 2 -->
+
+    <component name="muxer-audio-video2"
+               type="webm-muxer"
+               label="muxer-webm-ingles"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.11.0.1">
+      <eater name="default">
+        <feed alias="default">fgdp-audio2:default</feed>
+        <feed alias="default-bis">fgdp-video:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+
+
+<!-- _______________________________________FALTAM LOGS e Debug _______________________ -->
+
+<!-- Servir HTTP 1    --> 
+
+    <component name="http-audio-video"
+               type="http-streamer"
+               label="http-audio-video"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/fcd_odeon_portugues.webm</property>
+      <property name="hostname">50.16.236.21</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+<!-- Servir HTTP 2    --> 
+
+    <component name="http-audio-video2"
+               type="http-streamer"
+               label="http-audio-video2"
+               worker="ec2-worker"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video2:default</feed>
+      </eater>
+      <property name="porter-username">xSEhEfOlhRbH</property>
+      <property name="mount-point">/fcd_odeon_ingles.webm</property>
+      <property name="hostname">50.16.236.21</property>
+      <property name="burst-on-connect">True</property>
+      <property name="burst-time">4</property>    
+      <property name="description">Streaming</property>   
+      <property name="port">80</property>
+      <property name="bandwidth-limit">400000000</property>
+      <property name="type">slave</property>
+      <property name="porter-socket-path">flu-enqgOe.socket</property>
+      <property name="porter-password">plXuQysiCSko</property>
+      <clock-master>false</clock-master>
+      <plugs>
+      </plugs>
+    </component>
+
+     
+  </flow>
+  
+</planet>
+
