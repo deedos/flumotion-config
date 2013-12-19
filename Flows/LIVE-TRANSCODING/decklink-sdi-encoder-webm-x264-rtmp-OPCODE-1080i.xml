@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planet name="admin">
+   
+  <atmosphere>
+  </atmosphere>
+ 
+  
+<flow name="default">
+ 
+<!--__________________________________________________PRODUCERS/ENTRADAS__________________________________________________-->
+ 
+<!-- VIDEO - REDIMENSIONAR De ACORDO com JANELA
+ 
+    <component name="producer-placa-video"
+               type="webcam-producer"
+               label="producer-placa-video"
+               worker="localhost"
+               project="flumotion"
+               version="0.10.0">
+      <property name="height">360</property>
+      <property name="width">640</property>
+      <property name="mime">video/x-raw-yuv</property>
+      <property name="element-factory">v4l2src</property>
+      <property name="device">/dev/video0</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+    <component name="producer-video"
+               project="flumotion"
+               type="pipeline-converter"
+               version="0.11.0.1"
+               worker="localhost">
+      <eater name="default">
+         <feed alias="default">producer-placa-video</feed>
+      </eater>
+      <property name="pipeline">postproc_ffmpegdeint ! ffmpegcolorspace</property>
+    </component>
+ -->
+ 
+ 
+<!-- VIDEO - -->
+ 
+    <component name="producer-decklink"
+               project="flumotion"
+               label="producer-decklink"
+               type="pipeline-producer"
+               version="0.11.0.1"
+               worker="localhost">
+      <property name="pipeline">decklinksrc mode=11 subdevice=1 connection=0 audio-input=1  name=src ! queue ! ffmpegcolorspace ! @feeder:video@  src. ! @feeder:audio@ sync=false src.</property>
+    <clock-master>true</clock-master>
+    </component>
+ 
+ 
+<!-- CRIAR DOWNSCALER PARA passar FRAMERATE PRA 15 -->
+ 
+ 
+<component
+               name="producer-video"
+               type="pipeline-converter"
+               label="scaler"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-decklink:video</feed>
+      </eater>
+ <property name="pipeline">videoscale ! videorate ! video/x-raw-yuv,width=640,height=360,framerate=60/4 ! ffmpegcolorspace</property>
+    </component>
+
+ 
+<!-- ___________________________________________________ ENCODERS ___________________________________________-->
+  
+<!-- encoders AUDIO VORBIS -->
+  
+    <component name="vorbis1"
+               type="vorbis-encoder"
+               label="vorbis-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-decklink:audio</feed>
+      </eater>
+      <property name="bitrate">96000</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+ 
+<!-- encoders AUDIO FAAC -->
+ 
+        <component name="faac1"
+               type="pipeline-converter"
+               label="aac-portugues"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-decklink:audio</feed>
+       </eater>
+     <property name="pipeline">audioconvert ! audio/x-raw-int, channels=2 ! voaacenc hard-resync=true perfect-timestamp=true mark-granule=true bitrate=96000</property>
+    </component>
+ 
+ 
+ 
+<!-- ENCODER VIDEO VP8 -->
+ 
+    <component name="encoder-vp8"
+               type="vp8-encoder"
+               label="encoder-vp8"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+       <property name="keyframe-maxdistance">120</property>
+      <property name="threads">3</property>
+      <property name="bitrate">450000</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+<!-- ENCODER VIDEO x264 -->
+ 
+    <component name="encoder-x264-baixa"
+               type="x264-encoder"
+               label="encoder-x264-baixa"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">120</property>
+      <property name="quality">4</property>
+      <property name="bitrate">400000</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+ 
+    <component name="encoder-x264-alta"
+               type="x264-encoder"
+               label="encoder-x264-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+      </eater>
+      <property name="keyframe-maxdistance">240</property>
+      <property name="quality">5</property>
+      <property name="bitrate">10000000</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+ 
+<!-- _________________________________________ MUXES/JUNTAR AUDIO e VIDEO _____________________________________ -->
+ 
+<!-- MUXER x264 ALTA -->
+ 
+    <component name="muxer-flv-alta"
+               type="gst-flv-muxer"
+               label="muxer-flv-alta"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-alta:default</feed>
+        <feed alias="default-bis">faac1:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+ 
+<!-- MUXES x264 baixas -->
+ 
+    <component name="muxer-flv-portugues"
+               type="gst-flv-muxer"
+               label="muxer-flv-baixa"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.0.1">
+      <eater name="default">
+        <feed alias="default">encoder-x264-baixa:default</feed>
+        <feed alias="default-bis">faac1:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+ 
+ 
+ 
+     
+    <component name="muxer-audio-video-1"
+               type="webm-muxer"
+               label="muxer-webm"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">vorbis1</feed>
+        <feed alias="default-bis">encoder-vp8:default</feed>
+      </eater>
+      <clock-master>false</clock-master>
+    </component>
+ 
+       
+ 
+ 
+ 
+<!-- _________________________________________________CONSUMERS/SAIDAS ______________________________ -->
+ 
+<!-- __ PREVIEWS __ -->
+ 
+    <component
+            name="preview"
+            type="preview-consumer"
+            label="preview-original"
+            worker="localhost"
+            project="flumotion"
+            version="0.9.1.1"> 
+     <eater name="default">
+        <feed alias="default">producer-video:default</feed>
+     </eater>
+    </component>
+ 
+ 
+<!-- ____________________________GRAVAR _________________________-->
+ 
+ 
+<!-- GRAVAR ALTA x264-->
+ 
+   <component name="name-of-file-to-be-recorded"
+        project="flumotion"
+                type="disk-consumer"
+               label="gravar-alta"
+               worker="localhost"
+               version="0.9.0.1">
+               <eater name="default">
+               <feed alias="default">muxer-flv-alta:default</feed>
+               </eater>
+               <property name="directory">/path_to_folder</property>
+ 
+    </component>
+ 
+ 
+<!-- FGDPS dos ENCODINGS -->
+ 
+     <component name="fgdp-portugues"
+               type="fgdp-consumer"
+               label="fgdp-webm"
+               worker="localhost"
+               project="flumotion"
+               version="0.9.1.1">
+      <eater name="default">
+        <feed alias="default">muxer-audio-video-1:default</feed>
+      </eater>
+      <property name="username">user</property>
+      <property name="host">x.x.x.x</property>
+      <property name="password">test</property>
+      <property name="port">xxxx</property>
+      <property name="max-reconnection-delay">1</property>
+      <clock-master>false</clock-master>
+    </component>
+ 
+ 
+ 
+ 
+<!-- ________________________________RTMPs WOWZA_________________________________ -->
+ 
+    <component
+             name="rtmp-mux1"
+             project="flumotion"
+             label="rtmp-mux1"
+             type="pipeline-consumer"
+             version="0.9.0.1"
+             worker="localhost">
+      <eater name="default">
+        <feed alias="default">muxer-flv-portugues:default</feed>
+      </eater>
+      <property name="pipeline">rtmpsink qos=true location=rtmp://xxxxxxx</property>
+    </component>
+ 
+     
+  </flow>
+   
+</planet>
